@@ -1,0 +1,219 @@
+<title>Worlds 2026 英雄池預測</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: broadcast-style stat wall. Team cards in a 3-col grid, each a stack of 5 role rows with champion chips; hover/tap a chip for its detail panel. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0e15;
+  --panel: #111723;
+  --panel-2: #172031;
+  --line: #222c3f;
+  --fg: #e4e9f2;
+  --muted: #8691a6;
+  --gold: #dcb062;
+  --good: #4fcf8e;
+  --bad: #ee6b6b;
+  --r-lck: #5aa8ff; --r-lpl: #ff6f6f; --r-lec: #b393ff; --r-lcp: #4fd1c5; --r-lcs: #ffb54d; --r-cblol: #86d95a;
+  --display: "Chakra Petch", "Noto Sans TC", system-ui, sans-serif;
+  --body: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1440px; margin: 0 auto; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 3vw, 30px); letter-spacing: .02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--gold); }
+.sub { color: var(--muted); font-size: 13px; margin: 4px 0 0; max-width: 70ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip-btn { font: 600 12px var(--display); letter-spacing: .06em; color: var(--muted); background: var(--panel); border: 1px solid var(--line);
+  padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.chip-btn[aria-pressed="true"] { color: var(--bg); background: var(--gold); border-color: var(--gold); }
+.chip-btn:focus-visible, select:focus-visible, .champ:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+select { font: 500 12px var(--body); color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.team { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }
+.team-head { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px 14px;
+  background: var(--panel-2); border-bottom: 1px solid var(--line); box-shadow: inset 3px 0 0 var(--rc); }
+.logo { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; font: 700 11px var(--display);
+  color: var(--rc); border: 1px solid var(--rc); letter-spacing: .02em; }
+.tname { font: 700 17px var(--display); color: var(--rc); letter-spacing: .03em; }
+.tag { font: 600 10px var(--display); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+.trec { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.trec small { display: block; color: var(--muted); font-size: 11px; }
+.odds { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); }
+.odds > div { padding: 8px 10px; border-right: 1px solid var(--line); }
+.odds > div:last-child { border-right: 0; }
+.odds b { display: block; font: 600 15px var(--mono); font-variant-numeric: tabular-nums; }
+.odds span { font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--rc); }
+.player { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.player:last-child { border-bottom: 0; }
+.prow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 7px; }
+.role { font: 700 11px var(--display); color: var(--muted); width: 30px; letter-spacing: .05em; }
+.pname { font-weight: 700; font-size: 15px; }
+.pname.empty { color: var(--muted); font-weight: 500; }
+.pstat { margin-left: auto; display: flex; gap: 12px; font: 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.pstat em { font-style: normal; color: var(--gold); }
+.pstat .wr { color: var(--fg); }
+.pool { display: flex; flex-wrap: wrap; gap: 8px 6px; padding-left: 42px; }
+.champ { position: relative; width: 44px; text-align: center; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; }
+.icon { position: relative; width: 44px; height: 44px; border-radius: 6px; overflow: hidden; display: grid; place-items: center;
+  background: var(--cc); font: 700 11px var(--display); letter-spacing: -.01em; color: var(--bg); border: 1px solid var(--line); }
+.icon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.share { position: absolute; right: -3px; bottom: 14px; font: 600 10px var(--mono); background: var(--bg); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; line-height: 14px; }
+.cwr { display: block; font: 11px var(--mono); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.up { color: var(--good); } .down { color: var(--bad); } .even { color: var(--muted); }
+.tip { position: fixed; z-index: 20; width: 260px; max-width: calc(100vw - 32px); background: var(--panel-2); border: 1px solid var(--gold);
+  border-radius: 10px; padding: 12px 14px; box-shadow: 0 12px 32px rgba(0,0,0,.5); font-size: 12px; pointer-events: none; }
+.tip h3 { margin: 0 0 6px; display: flex; justify-content: space-between; align-items: baseline; font: 700 16px var(--display); color: var(--gold); }
+.tip h3 b { font: 600 18px var(--mono); }
+.tip dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.tip dt { color: var(--muted); }
+.tip dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.tip .mini { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; font-family: var(--body); }
+.tip .mini span { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.foot { color: var(--muted); font-size: 12px; margin-top: 24px; max-width: 80ch; }
+.foot code { font-family: var(--mono); color: var(--fg); }
+@media (max-width: 480px) { .pool { padding-left: 0; } .odds b { font-size: 13px; } }
+@media (prefers-reduced-motion: no-preference) { .champ .icon { transition: transform .12s; } .champ:hover .icon { transform: translateY(-2px); } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>WORLDS 2026 <span>英雄池預測</span></h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="controls" role="group" aria-label="篩選賽區" id="regions"></div>
+    <div class="controls">
+      <label for="sort" class="sub" style="margin:0">排序</label>
+      <select id="sort">
+        <option value="champion">奪冠機率</option>
+        <option value="advance">晉級八強</option>
+        <option value="rating">隊伍實力</option>
+      </select>
+    </div>
+  </header>
+  <main class="grid" id="grid"></main>
+  <p class="foot">
+    每格英雄：右下角為該隊此位置選用該英雄的比例，下方為預測勝率；滑過或點擊可看詳細。評分 = 版本強度 + 隊伍熟練度 + 風格加成（模型分數，非實際比賽數據）。
+    資料由 <code>python -m lolsim dashboard</code> 從蒙地卡羅模擬產生，更新 <code>lolsim/data/*.json</code> 後重跑即可。
+  </p>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = __DATA__;
+const ROLE_COLOR = { TOP: "#c98b5a", JNG: "#6fae6a", MID: "#6c8fd6", BOT: "#d0b04f", SUP: "#a983c9" };
+const REGION_VAR = r => `var(--r-${r.toLowerCase()})`;
+const fmt = n => (Math.round(n * 10) / 10).toFixed(1);
+const wrClass = w => w >= 52 ? "up" : w <= 48 ? "down" : "even";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+document.getElementById("sub").textContent =
+  `模擬整屆賽事 ${DATA.sims.toLocaleString()} 次：每隊每個位置的英雄選用分布、預測勝率與晉級機率。戰績為每屆平均預測場數。`;
+
+const regions = ["全部", ...new Set(DATA.teams.map(t => t.region))];
+let region = "全部";
+try { region = localStorage.getItem("region") || "全部"; } catch (e) {}
+if (!regions.includes(region)) region = "全部";
+
+function renderRegions() {
+  document.getElementById("regions").innerHTML = regions.map(r =>
+    `<button class="chip-btn" type="button" data-r="${esc(r)}" aria-pressed="${r === region}">${esc(r)}</button>`).join("");
+}
+document.getElementById("regions").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  region = b.dataset.r;
+  try { localStorage.setItem("region", region); } catch (err) {}
+  renderRegions(); renderGrid();
+});
+document.getElementById("sort").addEventListener("change", renderGrid);
+
+function champChip(p, team, role) {
+  const c = DATA.champs[p.champ];
+  const words = p.champ.replace(/[^A-Za-z ]/g, "").split(" ");
+  const initials = words.length > 1 ? words.map(w => w[0]).join("").slice(0, 3) : words[0].slice(0, 4);
+  const img = `https://ddragon.leagueoflegends.com/cdn/${DATA.ddragon}/img/champion/${c.key}.png`;
+  return `<button class="champ" type="button" data-team="${team}" data-role="${role}" data-champ="${esc(p.champ)}" aria-label="${esc(p.champ)} 詳細">
+    <span class="icon" style="--cc:${ROLE_COLOR[c.roles[0]]}">${esc(initials)}<img src="${img}" alt="" loading="lazy" onerror="this.remove()"></span>
+    <span class="share">${p.share}%</span>
+    <span class="cwr ${wrClass(p.winrate)}">${fmt(p.winrate)}%</span>
+  </button>`;
+}
+
+function teamCard(t) {
+  const odds = [["晉級", t.advance], ["四強", t.semis], ["決賽", t.final], ["冠軍", t.champion]];
+  return `<section class="team" style="--rc:${REGION_VAR(t.region)}" aria-label="${esc(t.name)}">
+    <div class="team-head">
+      <div class="logo">${esc(t.code)}</div>
+      <div><span class="tname">${esc(t.code)}</span><span class="tag">${esc(t.region)}</span><span class="tag">${esc(t.seed)}</span>
+        <div class="sub" style="margin:0">${esc(t.name)} · 實力 ${t.rating}</div></div>
+      <div class="trec">${fmt(t.wins)}-${fmt(t.losses)} <small>${fmt(t.games)} 場/屆</small></div>
+    </div>
+    <div class="odds">${odds.map(([k, v]) => `<div><b>${fmt(v)}%</b><span>${k}</span><div class="bar"><i style="width:${Math.min(v, 100)}%"></i></div></div>`).join("")}</div>
+    ${t.players.map(p => `<div class="player">
+      <div class="prow"><span class="role">${p.roleZh}</span>
+        <span class="pname ${p.name ? "" : "empty"}">${esc(p.name || t.code + " " + p.role)}</span>
+        <span class="pstat"><span>評分 <em>${fmt(p.score)}</em></span><span>勝率 <span class="wr">${fmt(p.winrate)}%</span></span></span></div>
+      <div class="pool">${p.pool.map(c => champChip(c, t.code, p.role)).join("")}</div>
+    </div>`).join("")}
+  </section>`;
+}
+
+function renderGrid() {
+  const key = document.getElementById("sort").value;
+  const rows = DATA.teams.filter(t => region === "全部" || t.region === region).sort((a, b) => b[key] - a[key]);
+  document.getElementById("grid").innerHTML = rows.map(teamCard).join("");
+}
+
+const tip = document.getElementById("tip");
+let pinned = null;
+function showTip(btn) {
+  const t = DATA.teams.find(x => x.code === btn.dataset.team);
+  const pl = t.players.find(x => x.role === btn.dataset.role);
+  const p = pl.pool.find(x => x.champ === btn.dataset.champ);
+  const c = DATA.champs[p.champ];
+  const list = a => a.length ? `<span class="mini">${a.map(x => `<span>${esc(x)}</span>`).join("")}</span>` : "—";
+  tip.innerHTML = `<h3>${esc(p.champ)} <b>${fmt(p.score)}</b></h3>
+    <dl>
+      <dt>${esc(t.code)} ${pl.roleZh}選用率</dt><dd>${p.share}%</dd>
+      <dt>每屆預測場數</dt><dd>${p.games.toFixed(2)}</dd>
+      <dt>預測勝率</dt><dd class="${wrClass(p.winrate)}">${fmt(p.winrate)}%</dd>
+      <dt>被對手禁用</dt><dd>${fmt(p.banned)}% / 場</dd>
+      <dt>版本強度</dt><dd>${c.power}</dd>
+      <dt>隊伍熟練加成</dt><dd>${p.comfort > 0 ? "+" : ""}${fmt(p.comfort)}</dd>
+      <dt>全賽事出場率</dt><dd>${fmt(c.presence)}%</dd>
+      <dt>傷害 / 位置</dt><dd>${c.dmg} · ${c.roles.join("/")}</dd>
+      <dt>特性</dt><dd>${list(c.tags)}</dd>
+      <dt>克制</dt><dd>${list(c.counters)}</dd>
+      <dt>被克制</dt><dd>${list(c.countered)}</dd>
+    </dl>`;
+  tip.hidden = false;
+  const r = btn.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = Math.min(Math.max(16, r.left + r.width / 2 - w / 2), innerWidth - w - 16);
+  let y = r.bottom + 8;
+  if (y + h > innerHeight - 16) y = Math.max(16, r.top - h - 8);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const grid = document.getElementById("grid");
+grid.addEventListener("mouseover", e => { const b = e.target.closest(".champ"); if (b && !pinned) showTip(b); });
+grid.addEventListener("mouseout", e => { if (!pinned && e.target.closest(".champ") && !e.relatedTarget?.closest?.(".champ")) tip.hidden = true; });
+grid.addEventListener("focusin", e => { const b = e.target.closest(".champ"); if (b) showTip(b); });
+grid.addEventListener("focusout", () => { if (!pinned) tip.hidden = true; });
+document.addEventListener("click", e => {
+  const b = e.target.closest(".champ");
+  if (b && pinned !== b) { pinned = b; showTip(b); }
+  else { pinned = null; tip.hidden = true; }
+});
+addEventListener("scroll", () => { if (!tip.hidden) { pinned = null; tip.hidden = true; } }, { passive: true });
+
+renderRegions();
+renderGrid();
+</script>

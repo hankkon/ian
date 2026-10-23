@@ -99,3 +99,13 @@ logit(藍方勝) = ln10 × (藍方rating − 紅方rating) / 400 + 藍方優勢 
 ```bash
 python -m unittest
 ```
+
+## 英雄池儀表板
+
+```bash
+python -m lolsim --seed 2026 dashboard --sims 3000      # 輸出 reports/dashboard.html
+```
+仿直播數據牆：每隊一張卡片，列出晉級/四強/決賽/冠軍機率與每屆預測戰績；每個位置列出選手、評分、勝率與英雄池
+（右下角 = 該隊此位置的選用比例、下方 = 預測勝率），滑過或點擊英雄可看版本強度、熟練加成、被禁率、克制關係。
+選手名稱在 `lolsim/data/players.json`（目前只填了 MKOI、KC、TLAW、LYON 部分，其餘顯示位置）。
+有網路時英雄頭像會從 Riot Data Dragon 載入，否則顯示英雄縮寫。

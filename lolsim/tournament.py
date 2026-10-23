@@ -19,10 +19,19 @@ class DraftStats:
     bans: Counter = field(default_factory=Counter)
     wins: Counter = field(default_factory=Counter)
     role_picks: dict = field(default_factory=lambda: defaultdict(Counter))
+    # (team, role, champion) -> games / wins, and team -> games / wins
+    team_picks: Counter = field(default_factory=Counter)
+    team_pick_wins: Counter = field(default_factory=Counter)
+    team_games: Counter = field(default_factory=Counter)
+    team_wins: Counter = field(default_factory=Counter)
+    team_bans_against: Counter = field(default_factory=Counter)   # (team, champion) banned by opponents
 
     def add(self, other: "DraftStats", weight: float = 1.0) -> None:
         self.games += other.games * weight
-        for src, dst in ((other.picks, self.picks), (other.bans, self.bans), (other.wins, self.wins)):
+        for src, dst in ((other.picks, self.picks), (other.bans, self.bans), (other.wins, self.wins),
+                         (other.team_picks, self.team_picks), (other.team_pick_wins, self.team_pick_wins),
+                         (other.team_games, self.team_games), (other.team_wins, self.team_wins),
+                         (other.team_bans_against, self.team_bans_against)):
             for k, v in src.items():
                 dst[k] += v * weight
         for r, cnt in other.role_picks.items():
@@ -55,22 +64,28 @@ class Simulator:
                     d = self.drafter.run(teams[b], teams[r])
                     p = game_win_prob(teams[b], teams[r], d.edge())
                     probs.append(p)
-                    self._record(st, d, p)
+                    self._record(st, d, p, (b, r))
                 self.table[(b, r)] = float(np.mean(probs))
                 self.pair_stats[(b, r)] = st
 
-    def _record(self, st: DraftStats, d, blue_win: float) -> None:
+    def _record(self, st: DraftStats, d, blue_win: float, codes: tuple[str, str]) -> None:
         names = self.pool.names
         st.games += 1
         for side, win in ((BLUE, blue_win), (RED, 1 - blue_win)):
+            team, opp = codes[side], codes[1 - side]
+            st.team_games[team] += 1
+            st.team_wins[team] += win
             for role, c in d.picks[side].items():
                 if self.pool.filler[c]:
                     continue
                 st.picks[names[c]] += 1
                 st.wins[names[c]] += win
                 st.role_picks[role][names[c]] += 1
+                st.team_picks[(team, role, names[c])] += 1
+                st.team_pick_wins[(team, role, names[c])] += win
             for c in d.bans[side]:
                 st.bans[names[c]] += 1
+                st.team_bans_against[(opp, names[c])] += 1
 
     def play_game(self, blue: str, red: str, locked: set[int]) -> bool:
         if self.mode == "fast":
@@ -79,7 +94,7 @@ class Simulator:
         d = self.drafter.run(self.teams[blue], self.teams[red], locked)
         p = game_win_prob(self.teams[blue], self.teams[red], d.edge())
         won = self.rng.random() < p
-        self._record(self.stats, d, float(won))
+        self._record(self.stats, d, float(won), (blue, red))
         if self.fearless:
             for side in (BLUE, RED):
                 locked.update(c for c in d.picks[side].values() if not self.pool.filler[c])

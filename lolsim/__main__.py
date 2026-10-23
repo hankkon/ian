@@ -129,6 +129,13 @@ def main(argv=None) -> None:
     d.add_argument("blue"); d.add_argument("red")
     d.add_argument("--sims", type=int, default=2000)
 
+    db = sub.add_parser("dashboard", help="產生隊伍/選手/英雄池儀表板 HTML")
+    db.add_argument("--sims", type=int, default=3000)
+    db.add_argument("--draft-samples", type=int, default=60)
+    db.add_argument("--results", help="已賽結果 JSON（預設 lolsim/data/results.json）")
+    db.add_argument("--html", default="reports/dashboard.html", help="輸出路徑")
+    db.add_argument("--fragment", action="store_true", help="不含 <!doctype>/<html> 外框（給會自動包外框的平台）")
+
     args = p.parse_args(argv)
     pool = load_champions()
     teams = load_teams(pool)
@@ -136,6 +143,13 @@ def main(argv=None) -> None:
         code = getattr(args, attr, None)
         if code and code.upper() not in teams:
             p.error(f"未知隊伍 {code}；可用：{', '.join(teams)}")
+    if args.cmd == "dashboard":
+        from .dashboard import write_dashboard
+        results = load_results(Path(args.results) if args.results else None)
+        path = write_dashboard(pool, teams, results, args.sims, args.seed, args.draft_samples,
+                               Path(args.html), standalone=not args.fragment)
+        print(f"已輸出 {path}")
+        return
     report = {"tournament": cmd_tournament, "match": cmd_match, "draft": cmd_draft}[args.cmd](args, pool, teams)
     print(report)
     if args.out:

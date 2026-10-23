@@ -1,0 +1,11 @@
+{
+  "_note": "Fill in real results to condition the simulation. pairings: fixed draws per Swiss round (round 1 is the official draw). results: winners of played matches (order of the pair does not matter). Knockout results go in 'knockout' as {\"teams\": [a, b], \"winner\": w}.",
+  "swiss": {
+    "pairings": {
+      "1": [["GEN", "IG"], ["HLE", "TES"], ["T1", "LOS"], ["DK", "G2"],
+            ["AL", "KC"], ["BLG", "MKOI"], ["TLAW", "CFO"], ["LYON", "TSW"]]
+    },
+    "results": []
+  },
+  "knockout": []
+}

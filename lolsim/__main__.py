@@ -136,6 +136,13 @@ def main(argv=None) -> None:
     db.add_argument("--html", default="reports/dashboard.html", help="輸出路徑")
     db.add_argument("--fragment", action="store_true", help="不含 <!doctype>/<html> 外框（給會自動包外框的平台）")
 
+    pr = sub.add_parser("predict", help="產生預測網頁（晉級機率、第一輪對戰、BP 預測）")
+    pr.add_argument("--sims", type=int, default=5000)
+    pr.add_argument("--draft-samples", type=int, default=60)
+    pr.add_argument("--results", help="已賽結果 JSON（預設 lolsim/data/results.json）")
+    pr.add_argument("--html", default="reports/predictions.html", help="輸出路徑")
+    pr.add_argument("--fragment", action="store_true", help="不含 <!doctype>/<html> 外框")
+
     args = p.parse_args(argv)
     pool = load_champions()
     teams = load_teams(pool)
@@ -143,6 +150,13 @@ def main(argv=None) -> None:
         code = getattr(args, attr, None)
         if code and code.upper() not in teams:
             p.error(f"未知隊伍 {code}；可用：{', '.join(teams)}")
+    if args.cmd == "predict":
+        from .predictions import write_predictions
+        results = load_results(Path(args.results) if args.results else None)
+        path = write_predictions(pool, teams, results, args.sims, args.seed, args.draft_samples,
+                                 Path(args.html), standalone=not args.fragment)
+        print(f"已輸出 {path}")
+        return
     if args.cmd == "dashboard":
         from .dashboard import write_dashboard
         results = load_results(Path(args.results) if args.results else None)

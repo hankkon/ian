@@ -1,0 +1,218 @@
+<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Worlds 2026 預測</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column of broadcast panels — favourites, round 1 matchups, full odds table, top-8 Bo5 grid, pick/ban forecast. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0e15;
+  --panel: #111723;
+  --panel-2: #172031;
+  --line: #222c3f;
+  --fg: #e4e9f2;
+  --muted: #8691a6;
+  --gold: #dcb062;
+  --pick: #5aa8ff;
+  --ban: #ee6b6b;
+  --good: #4fcf8e;
+  --r-lck: #5aa8ff; --r-lpl: #ff6f6f; --r-lec: #b393ff; --r-lcp: #4fd1c5; --r-lcs: #ffb54d; --r-cblol: #86d95a;
+  --display: "Chakra Petch", "Noto Sans TC", system-ui, sans-serif;
+  --body: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 24px 48px; display: grid; gap: 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 clamp(24px, 3.4vw, 34px) var(--display); letter-spacing: .02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--gold); }
+h2 { font: 700 17px var(--display); letter-spacing: .05em; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h2 small { font: 400 12px var(--body); color: var(--muted); letter-spacing: 0; }
+.sub { color: var(--muted); font-size: 13px; margin: 6px 0 0; max-width: 72ch; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.code { font: 700 15px var(--display); color: var(--rc, var(--fg)); letter-spacing: .03em; }
+.muted { color: var(--muted); }
+
+.favs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.fav { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: inset 0 3px 0 var(--rc); }
+.fav .rank { font: 600 11px var(--display); color: var(--muted); letter-spacing: .1em; }
+.fav .code { font-size: 22px; display: block; margin-top: 2px; }
+.fav .big { font: 600 28px var(--mono); color: var(--gold); line-height: 1.1; margin-top: 8px; }
+.fav .lbl { font-size: 11px; color: var(--muted); }
+@media (max-width: 720px) { .favs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.matches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 48px; }
+@media (max-width: 720px) { .matches { grid-template-columns: 1fr; } }
+.match { display: grid; grid-template-columns: 52px 1fr 52px; gap: 10px; align-items: center; }
+.match .code:last-child { text-align: right; }
+.split { position: relative; height: 26px; border-radius: 6px; overflow: hidden; display: flex; background: var(--line); }
+.split i { display: flex; align-items: center; font: 600 12px var(--mono); padding: 0 8px; color: var(--bg); white-space: nowrap; }
+.split i:last-child { justify-content: flex-end; }
+.split i.lose { opacity: .35; }
+.pool-tag { grid-column: 1 / -1; font: 600 11px var(--display); color: var(--muted); letter-spacing: .08em; margin: 6px 0 -4px; }
+.past-round { margin-bottom: 14px; }
+.past-round h3 { font: 600 12px var(--display); color: var(--muted); letter-spacing: .08em; margin: 0 0 8px; }
+.results { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 8px; }
+.res { display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.res .code { font-size: 13px; padding: 0 5px; border-radius: 4px; }
+.res .won { background: var(--fg); color: var(--bg); }
+.res .pct { white-space: nowrap; margin-left: auto; font: 12px var(--mono); color: var(--muted); }
+.upset { white-space: nowrap; font: 700 10px var(--display); letter-spacing: .06em; color: var(--bg); background: var(--ban); border-radius: 4px; padding: 1px 6px; }
+.form-up { color: var(--good); } .form-down { color: var(--ban); }
+
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 780px; }
+th, td { padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th { font: 600 11px var(--display); color: var(--muted); letter-spacing: .06em; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { text-align: center; }
+td.adv { width: 30%; }
+.advbar { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.stack { flex: 1; height: 10px; border-radius: 3px; background: var(--line); display: flex; overflow: hidden; max-width: 200px; }
+.stack i:nth-child(1) { background: var(--gold); }
+.stack i:nth-child(2) { background: color-mix(in srgb, var(--gold) 65%, var(--line)); }
+.stack i:nth-child(3) { background: color-mix(in srgb, var(--gold) 35%, var(--line)); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend b { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+td.champ { color: var(--gold); font-weight: 600; }
+
+.h2h { min-width: 520px; }
+.h2h td, .h2h th { text-align: center; padding: 6px; }
+.h2h td.cell { font: 600 12px var(--mono); color: var(--fg); }
+
+.bp { display: grid; gap: 6px; }
+.bprow { display: grid; grid-template-columns: 120px 44px 1fr 56px; gap: 10px; align-items: center; }
+.bprow .name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bprow .role { font-size: 12px; color: var(--muted); }
+.pb { height: 16px; background: var(--line); border-radius: 4px; display: flex; overflow: hidden; }
+.pb i { display: block; }
+.pb .p { background: var(--pick); } .pb .b { background: var(--ban); }
+.bprow .num { text-align: right; font-size: 12px; }
+@media (max-width: 480px) { .bprow { grid-template-columns: 92px 1fr 48px; } .bprow .role { display: none; } }
+.foot { color: var(--muted); font-size: 12px; max-width: 80ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>WORLDS 2026 <span>晉級與奪冠預測</span></h1>
+    <p class="sub" id="sub"></p>
+  </header>
+
+  <section class="favs" id="favs" aria-label="奪冠熱門"></section>
+
+  <section class="panel">
+    <h2 id="nextTitle">下一輪預測</h2>
+    <div class="matches" id="next"></div>
+  </section>
+
+  <section class="panel" id="pastPanel">
+    <h2>已賽結果 <small>百分比為賽前模型預測；勝方隊伍代碼為白底</small></h2>
+    <div id="past"></div>
+  </section>
+
+  <section class="panel">
+    <h2>各隊晉級機率 <small>依奪冠機率排序</small></h2>
+    <div class="scroll"><table id="odds"></table></div>
+    <div class="legend"><span><b style="background:var(--gold)"></b>3-0</span>
+      <span><b style="background:color-mix(in srgb, var(--gold) 65%, var(--line))"></b>3-1</span>
+      <span><b style="background:color-mix(in srgb, var(--gold) 35%, var(--line))"></b>3-2</span></div>
+  </section>
+
+  <section class="panel">
+    <h2>八強熱門隊伍對戰 <small>BO5，列隊伍贏欄隊伍的機率</small></h2>
+    <div class="scroll"><table class="h2h" id="h2h"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>BP 預測：最熱門英雄 <small>右側數字為出場率（選用 + 禁用）</small></h2>
+    <div class="bp" id="bp"></div>
+    <div class="legend"><span><b style="background:var(--pick)"></b>選用</span><span><b style="background:var(--ban)"></b>禁用</span></div>
+  </section>
+
+  <p class="foot">模型：Elo 式隊伍實力 + 逐手 BP 模擬（版本強度、隊伍招牌英雄、陣容需求、克制、封鎖）+ 瑞士輪/淘汰賽蒙地卡羅。隊伍實力與英雄資料為賽前估計，非官方數據；填入真實賽果後重跑 <span class="num">python -m lolsim predict</span> 即可更新。</p>
+</div>
+
+<script>
+const D = {"sims": 5000, "teams": [{"code": "GEN", "name": "Gen.G", "region": "LCK", "seed": "LCK #1", "rating": 1810, "form": 11, "record": "1-0", "3-0": 41.0, "3-1": 35.3, "3-2": 17.3, "advance": 93.6, "semis": 78.3, "final": 53.7, "champion": 35.1}, {"code": "HLE", "name": "Hanwha Life Esports", "region": "LCK", "seed": "LCK #2", "rating": 1792, "form": 12, "record": "1-0", "3-0": 37.3, "3-1": 35.8, "3-2": 18.7, "advance": 91.8, "semis": 74.8, "final": 47.3, "champion": 28.4}, {"code": "T1", "name": "T1", "region": "LCK", "seed": "LCK #3", "rating": 1764, "form": 5, "record": "1-0", "3-0": 37.6, "3-1": 32.9, "3-2": 18.0, "advance": 88.6, "semis": 67.4, "final": 37.4, "champion": 16.8}, {"code": "BLG", "name": "Bilibili Gaming", "region": "LPL", "seed": "LPL #2", "rating": 1742, "form": -23, "record": "0-1", "3-0": 0.0, "3-1": 29.3, "3-2": 34.5, "advance": 63.8, "semis": 32.6, "final": 16.0, "champion": 7.2}, {"code": "DK", "name": "Dplus KIA", "region": "LCK", "seed": "LCK #4", "rating": 1719, "form": 14, "record": "1-0", "3-0": 26.9, "3-1": 27.6, "3-2": 23.5, "advance": 78.0, "semis": 49.9, "final": 19.6, "champion": 6.1}, {"code": "AL", "name": "Anyone's Legend", "region": "LPL", "seed": "LPL #1", "rating": 1713, "form": -22, "record": "0-1", "3-0": 0.0, "3-1": 18.0, "3-2": 31.6, "advance": 49.5, "semis": 21.3, "final": 8.7, "champion": 2.9}, {"code": "TES", "name": "Top Esports", "region": "LPL", "seed": "LPL #3", "rating": 1687, "form": -12, "record": "0-1", "3-0": 0.0, "3-1": 13.0, "3-2": 28.3, "advance": 41.3, "semis": 13.6, "final": 4.6, "champion": 1.2}, {"code": "MKOI", "name": "Movistar KOI", "region": "LEC", "seed": "LEC #2", "rating": 1632, "form": 23, "record": "1-0", "3-0": 18.6, "3-1": 21.7, "3-2": 20.6, "advance": 60.9, "semis": 14.6, "final": 3.4, "champion": 0.6}, {"code": "IG", "name": "Invictus Gaming", "region": "LPL", "seed": "LPL #4", "rating": 1669, "form": -11, "record": "0-1", "3-0": 0.0, "3-1": 14.4, "3-2": 22.2, "advance": 36.6, "semis": 10.6, "final": 2.9, "champion": 0.6}, {"code": "G2", "name": "G2 Esports", "region": "LEC", "seed": "LEC #1", "rating": 1655, "form": -14, "record": "0-1", "3-0": 0.0, "3-1": 16.3, "3-2": 22.4, "advance": 38.7, "semis": 10.1, "final": 2.4, "champion": 0.5}, {"code": "KC", "name": "Karmine Corp", "region": "LEC", "seed": "LEC #3", "rating": 1621, "form": 22, "record": "1-0", "3-0": 17.2, "3-1": 20.8, "3-2": 19.0, "advance": 57.0, "semis": 11.7, "final": 2.1, "champion": 0.3}, {"code": "CFO", "name": "CTBC Flying Oyster", "region": "LCP", "seed": "LCP #1", "rating": 1604, "form": 15, "record": "1-0", "3-0": 12.9, "3-1": 17.8, "3-2": 18.2, "advance": 48.8, "semis": 9.4, "final": 1.5, "champion": 0.2}, {"code": "LYON", "name": "LYON", "region": "LCS", "seed": "LCS #2", "rating": 1552, "form": 18, "record": "1-0", "3-0": 8.4, "3-1": 11.7, "3-2": 12.9, "advance": 33.1, "semis": 4.1, "final": 0.3, "champion": 0.0}, {"code": "TSW", "name": "Team Secret Whales", "region": "LCP", "seed": "LCP #2", "rating": 1552, "form": -18, "record": "0-1", "3-0": 0.0, "3-1": 2.8, "3-2": 6.0, "advance": 8.8, "semis": 0.8, "final": 0.0, "champion": 0.0}, {"code": "TLAW", "name": "Team Liquid Alienware", "region": "LCS", "seed": "LCS #1", "rating": 1550, "form": -15, "record": "0-1", "3-0": 0.0, "3-1": 2.0, "3-2": 5.4, "advance": 7.4, "semis": 0.7, "final": 0.0, "champion": 0.0}, {"code": "LOS", "name": "LOS", "region": "CBLOL", "seed": "CBLOL #1", "rating": 1455, "form": -5, "record": "0-1", "3-0": 0.0, "3-1": 0.7, "3-2": 1.3, "advance": 2.1, "semis": 0.0, "final": 0.0, "champion": 0.0}], "rounds": [{"round": 1, "matches": [{"a": "GEN", "b": "IG", "pa": 66.6, "winner": "GEN", "upset": false, "bo": null}, {"a": "HLE", "b": "TES", "pa": 61.3, "winner": "HLE", "upset": false, "bo": null}, {"a": "T1", "b": "LOS", "pa": 84.9, "winner": "T1", "upset": false, "bo": null}, {"a": "DK", "b": "G2", "pa": 55.0, "winner": "DK", "upset": false, "bo": null}, {"a": "AL", "b": "KC", "pa": 68.5, "winner": "KC", "upset": true, "bo": null}, {"a": "BLG", "b": "MKOI", "pa": 70.9, "winner": "MKOI", "upset": true, "bo": null}, {"a": "TLAW", "b": "CFO", "pa": 46.4, "winner": "CFO", "upset": false, "bo": null}, {"a": "LYON", "b": "TSW", "pa": 45.0, "winner": "LYON", "upset": true, "bo": null}], "done": true}, {"round": 2, "matches": [{"a": "GEN", "b": "HLE", "pa": 52.6, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "DK", "b": "T1", "pa": 43.2, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "CFO", "b": "MKOI", "pa": 45.5, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "LYON", "b": "KC", "pa": 41.2, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "LOS", "b": "G2", "pa": 23.6, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "IG", "b": "TSW", "pa": 64.9, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "TES", "b": "AL", "pa": 43.7, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "TLAW", "b": "BLG", "pa": 23.5, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}], "done": false}], "champs": [{"champ": "Rumble", "role": "上路", "pick": 21.5, "ban": 78.0}, {"champ": "K'Sante", "role": "上路", "pick": 39.1, "ban": 60.4}, {"champ": "Vi", "role": "打野", "pick": 26.9, "ban": 68.6}, {"champ": "Kai'Sa", "role": "下路", "pick": 31.3, "ban": 61.9}, {"champ": "Olaf", "role": "打野", "pick": 40.0, "ban": 52.9}, {"champ": "Jarvan IV", "role": "打野", "pick": 40.0, "ban": 51.5}, {"champ": "Orianna", "role": "中路", "pick": 27.4, "ban": 57.4}, {"champ": "Varus", "role": "下路", "pick": 42.0, "ban": 40.5}, {"champ": "Rell", "role": "輔助", "pick": 44.6, "ban": 34.8}, {"champ": "Nocturne", "role": "打野", "pick": 37.7, "ban": 39.4}, {"champ": "Taliyah", "role": "中路", "pick": 40.5, "ban": 36.4}, {"champ": "Xayah", "role": "下路", "pick": 45.4, "ban": 29.4}, {"champ": "Rakan", "role": "輔助", "pick": 37.0, "ban": 36.7}, {"champ": "Ambessa", "role": "上路", "pick": 42.1, "ban": 31.1}, {"champ": "Alistar", "role": "輔助", "pick": 60.1, "ban": 10.2}, {"champ": "Gnar", "role": "上路", "pick": 41.9, "ban": 20.5}, {"champ": "Cassiopeia", "role": "中路", "pick": 38.6, "ban": 20.8}, {"champ": "Nautilus", "role": "輔助", "pick": 34.0, "ban": 23.1}, {"champ": "Aurora", "role": "中路", "pick": 30.5, "ban": 20.4}, {"champ": "Kalista", "role": "下路", "pick": 26.1, "ban": 24.2}], "top8": ["GEN", "HLE", "T1", "DK", "BLG", "MKOI", "KC", "AL"], "h2h": [[null, 55, 64, 74, 70, 89, 90, 75], [45, null, 59, 73, 62, 87, 90, 72], [36, 41, null, 63, 56, 83, 85, 63], [26, 27, 37, null, 40, 72, 76, 49], [30, 38, 44, 60, null, 78, 83, 61], [11, 13, 17, 28, 22, null, 55, 29], [10, 10, 15, 24, 17, 45, null, 25], [25, 28, 37, 51, 39, 71, 75, null]]};
+const T = Object.fromEntries(D.teams.map(t => [t.code, t]));
+const rc = c => `--rc:var(--r-${T[c].region.toLowerCase()})`;
+const f1 = n => n.toFixed(1);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+document.getElementById("sub").textContent =
+  `整屆賽事模擬 ${D.sims.toLocaleString()} 次。瑞士輪 16 隊取 8 隊（3 勝晉級、3 敗淘汰），八強起全部 BO5。狀態：每場已賽結果依賽前預期調整隊伍實力（爆冷幅度越大，調整越多）。`;
+
+document.getElementById("favs").innerHTML = D.teams.slice(0, 4).map((t, i) => `
+  <div class="fav" style="${rc(t.code)}">
+    <span class="rank">奪冠熱門 #${i + 1}</span>
+    <span class="code">${esc(t.code)}</span>
+    <span class="muted" style="font-size:12px">${esc(t.name)} · ${esc(t.seed)}</span>
+    <div class="big">${f1(t.champion)}%</div><span class="lbl">冠軍機率 · 晉級 ${f1(t.advance)}%</span>
+  </div>`).join("");
+
+const matchRow = m => {
+  const pb = +(100 - m.pa).toFixed(1);
+  const fav = m.pa >= 50 ? m.a : m.b;
+  const col = c => `var(--r-${T[c].region.toLowerCase()})`;
+  return `<div class="match">
+    <span class="code" style="${rc(m.a)}">${esc(m.a)}</span>
+    <div class="split" role="img" aria-label="${esc(m.a)} ${m.pa}% 對 ${esc(m.b)} ${pb}%">
+      <i style="width:${m.pa}%;background:${col(m.a)}" class="${fav === m.a ? "" : "lose"}">${f1(m.pa)}%</i>
+      <i style="width:${pb}%;background:${col(m.b)}" class="${fav === m.b ? "" : "lose"}">${f1(pb)}%</i>
+    </div>
+    <span class="code" style="${rc(m.b)}">${esc(m.b)}</span>
+  </div>`;
+};
+const next = D.rounds.find(r => !r.done);
+if (next) {
+  const bo = next.matches.find(m => m.bo)?.bo || 1;
+  document.getElementById("nextTitle").innerHTML = `瑞士輪第 ${next.round} 輪預測 <small>BO${bo}，已計入前幾輪狀態與 BP 影響</small>`;
+  const pools = [...new Set(next.matches.map(m => m.pool))];
+  document.getElementById("next").innerHTML = pools.map(p =>
+    `<span class="pool-tag">${p} 組</span>` + next.matches.filter(m => m.pool === p).map(matchRow).join("")).join("");
+} else {
+  document.getElementById("next").closest("section").hidden = true;
+}
+const past = D.rounds.filter(r => r.matches.some(m => m.winner)).reverse();
+document.getElementById("pastPanel").hidden = !past.length;
+document.getElementById("past").innerHTML = past.map(r => {
+  const n = r.matches.filter(m => m.upset).length;
+  return `<div class="past-round"><h3>第 ${r.round} 輪${n ? `　·　${n} 場爆冷` : ""}</h3><div class="results">` +
+    r.matches.filter(m => m.winner).map(m => {
+      const pw = m.winner === m.a ? m.pa : +(100 - m.pa).toFixed(1);
+      return `<div class="res">
+        <span class="code ${m.winner === m.a ? "won" : ""}" style="${rc(m.a)}">${esc(m.a)}</span><span class="muted">vs</span>
+        <span class="code ${m.winner === m.b ? "won" : ""}" style="${rc(m.b)}">${esc(m.b)}</span>
+        ${m.upset ? `<span class="upset">爆冷</span>` : ""}<span class="pct">勝方賽前 ${f1(pw)}%</span></div>`;
+    }).join("") + "</div></div>";
+}).join("");
+
+document.getElementById("odds").innerHTML = `<thead><tr><th>隊伍</th><th>種子</th><th>戰績</th><th>狀態</th><th>晉級八強（3-0 / 3-1 / 3-2）</th><th>四強</th><th>決賽</th><th>冠軍</th></tr></thead><tbody>` +
+  D.teams.map(t => `<tr>
+    <td><span class="code" style="${rc(t.code)}">${esc(t.code)}</span></td>
+    <td class="muted">${esc(t.seed)}</td>
+    <td class="num">${t.record}</td>
+    <td class="num ${t.form > 0 ? "form-up" : t.form < 0 ? "form-down" : "muted"}" title="依已賽結果調整的實力分數">${t.form > 0 ? "▲" + t.form : t.form < 0 ? "▼" + (-t.form) : "—"}</td>
+    <td class="adv"><div class="advbar"><span class="stack" title="3-0 ${t["3-0"]}% · 3-1 ${t["3-1"]}% · 3-2 ${t["3-2"]}%">
+      <i style="width:${t["3-0"]}%"></i><i style="width:${t["3-1"]}%"></i><i style="width:${t["3-2"]}%"></i></span>
+      <span class="num">${f1(t.advance)}%</span></div></td>
+    <td class="num">${f1(t.semis)}%</td><td class="num">${f1(t.final)}%</td><td class="num champ">${f1(t.champion)}%</td>
+  </tr>`).join("") + "</tbody>";
+
+const heat = v => `color-mix(in srgb, var(--pick) ${Math.round(Math.abs(v - 50) * 1.6)}%, var(--panel-2))`;
+const heatBad = v => `color-mix(in srgb, var(--ban) ${Math.round(Math.abs(v - 50) * 1.6)}%, var(--panel-2))`;
+document.getElementById("h2h").innerHTML = `<thead><tr><th></th>${D.top8.map(c => `<th><span class="code" style="${rc(c)}">${esc(c)}</span></th>`).join("")}</tr></thead><tbody>` +
+  D.top8.map((a, i) => `<tr><th><span class="code" style="${rc(a)}">${esc(a)}</span></th>${D.h2h[i].map(v => v === null
+    ? `<td class="muted">—</td>`
+    : `<td class="cell" style="background:${v >= 50 ? heat(v) : heatBad(v)}">${v}%</td>`).join("")}</tr>`).join("") + "</tbody>";
+
+document.getElementById("bp").innerHTML = D.champs.map(c => `
+  <div class="bprow">
+    <span class="name">${esc(c.champ)}</span><span class="role">${esc(c.role)}</span>
+    <div class="pb" role="img" aria-label="選用 ${c.pick}% 禁用 ${c.ban}%"><i class="p" style="width:${c.pick}%"></i><i class="b" style="width:${c.ban}%"></i></div>
+    <span class="num">${f1(c.pick + c.ban)}%</span>
+  </div>`).join("");
+</script>

@@ -1,0 +1,9 @@
+{
+  "_note": "Starting rosters (TOP, JNG, MID, BOT, SUP). Leave a name empty to show the role instead. Fill in the rest as you confirm them.",
+  "rosters": {
+    "MKOI": ["Myrwn", "Elyoya", "Jojopyun", "Supa", "Alvaro"],
+    "KC":   ["Canna", "Yike", "kyeahoo", "Caliste", "Busio"],
+    "TLAW": ["Morgan", "Josedeodo", "Quid", "Yeon", "CoreJJ"],
+    "LYON": ["Dhokla", "Inspired", "", "", ""]
+  }
+}

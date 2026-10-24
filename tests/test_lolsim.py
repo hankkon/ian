@@ -61,10 +61,23 @@ class LolsimTest(unittest.TestCase):
     def test_known_results_are_applied(self):
         sim = Simulator(self.pool, self.teams, np.random.default_rng(3), draft_samples=3)
         results = load_results()["swiss"]
-        results = dict(results, results=[{"round": 1, "teams": ["LOS", "T1"], "winner": "LOS"}])
+        results = {"pairings": {"1": results["pairings"]["1"]},
+                   "results": [{"round": 1, "teams": ["LOS", "T1"], "winner": "LOS"}]}
         for _ in range(10):
             self.assertGreaterEqual(simulate_swiss(sim, results)["LOS"][0], 1)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FormTest(unittest.TestCase):
+    def test_upset_moves_ratings(self):
+        from lolsim.tournament import apply_form
+        pool = load_champions()
+        teams = load_teams(pool)
+        before = {c: t.rating for c, t in teams.items()}
+        rows = apply_form(teams, {"swiss": {"results": [{"round": 1, "teams": ["GEN", "LOS"], "winner": "LOS"}]}})
+        self.assertTrue(rows[0]["upset"])
+        self.assertLess(teams["GEN"].rating, before["GEN"])
+        self.assertAlmostEqual(teams["GEN"].rating - before["GEN"], before["LOS"] - teams["LOS"].rating)

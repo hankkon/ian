@@ -10,7 +10,7 @@ import numpy as np
 
 from .data import ROLES, load_champions, load_results, load_teams
 from .draft import BLUE, RED, Drafter, game_win_prob
-from .tournament import Simulator, head_to_head, role_of, run_tournament
+from .tournament import FORM_K, Simulator, apply_form, head_to_head, role_of, run_tournament
 
 
 def pct(x: float) -> str:
@@ -110,6 +110,7 @@ def main(argv=None) -> None:
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--out", help="同時把結果寫入 Markdown 檔")
     p.add_argument("--top", type=int, default=25, help="BP 表顯示的英雄數")
+    p.add_argument("--no-form", action="store_true", help="不依已賽結果調整隊伍實力（狀態）")
     p.add_argument("--no-fearless", action="store_true", help="關閉 Fearless（同系列賽不可重複使用英雄）")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -146,6 +147,9 @@ def main(argv=None) -> None:
     args = p.parse_args(argv)
     pool = load_champions()
     teams = load_teams(pool)
+    base_rating = {c: t.rating for c, t in teams.items()}
+    rpath = getattr(args, "results", None)
+    played = apply_form(teams, load_results(Path(rpath) if rpath else None), k=0 if args.no_form else FORM_K)
     for attr in ("team_a", "team_b", "blue", "red"):
         code = getattr(args, attr, None)
         if code and code.upper() not in teams:
@@ -154,7 +158,8 @@ def main(argv=None) -> None:
         from .predictions import write_predictions
         results = load_results(Path(args.results) if args.results else None)
         path = write_predictions(pool, teams, results, args.sims, args.seed, args.draft_samples,
-                                 Path(args.html), standalone=not args.fragment)
+                                 Path(args.html), standalone=not args.fragment,
+                                 played=played, base_rating=base_rating)
         print(f"已輸出 {path}")
         return
     if args.cmd == "dashboard":

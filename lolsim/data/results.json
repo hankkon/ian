@@ -1,11 +1,143 @@
 {
-  "_note": "Fill in real results to condition the simulation. pairings: fixed draws per Swiss round (round 1 is the official draw). results: winners of played matches (order of the pair does not matter). Knockout results go in 'knockout' as {\"teams\": [a, b], \"winner\": w}.",
+  "_note": "Fill in real results to condition the simulation. pairings: draws per Swiss round. results: winners of played matches (order of the pair does not matter). form: manual rating adjustments (Elo points) on top of the automatic result-based update. Knockout results go in 'knockout' as {\"teams\": [a, b], \"winner\": w}.",
   "swiss": {
     "pairings": {
-      "1": [["GEN", "IG"], ["HLE", "TES"], ["T1", "LOS"], ["DK", "G2"],
-            ["AL", "KC"], ["BLG", "MKOI"], ["TLAW", "CFO"], ["LYON", "TSW"]]
+      "1": [
+        [
+          "GEN",
+          "IG"
+        ],
+        [
+          "HLE",
+          "TES"
+        ],
+        [
+          "T1",
+          "LOS"
+        ],
+        [
+          "DK",
+          "G2"
+        ],
+        [
+          "AL",
+          "KC"
+        ],
+        [
+          "BLG",
+          "MKOI"
+        ],
+        [
+          "TLAW",
+          "CFO"
+        ],
+        [
+          "LYON",
+          "TSW"
+        ]
+      ],
+      "2": [
+        [
+          "GEN",
+          "HLE"
+        ],
+        [
+          "DK",
+          "T1"
+        ],
+        [
+          "CFO",
+          "MKOI"
+        ],
+        [
+          "LYON",
+          "KC"
+        ],
+        [
+          "LOS",
+          "G2"
+        ],
+        [
+          "IG",
+          "TSW"
+        ],
+        [
+          "TES",
+          "AL"
+        ],
+        [
+          "TLAW",
+          "BLG"
+        ]
+      ]
     },
-    "results": []
+    "results": [
+      {
+        "round": 1,
+        "teams": [
+          "GEN",
+          "IG"
+        ],
+        "winner": "GEN"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "HLE",
+          "TES"
+        ],
+        "winner": "HLE"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "T1",
+          "LOS"
+        ],
+        "winner": "T1"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "DK",
+          "G2"
+        ],
+        "winner": "DK"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "AL",
+          "KC"
+        ],
+        "winner": "KC"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "BLG",
+          "MKOI"
+        ],
+        "winner": "MKOI"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "TLAW",
+          "CFO"
+        ],
+        "winner": "CFO"
+      },
+      {
+        "round": 1,
+        "teams": [
+          "LYON",
+          "TSW"
+        ],
+        "winner": "LYON"
+      }
+    ]
   },
-  "knockout": []
+  "knockout": [],
+  "form": {}
 }

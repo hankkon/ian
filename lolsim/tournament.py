@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import itertools
+import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
@@ -278,3 +279,42 @@ def role_of(pool: ChampionPool, st: DraftStats, champ: str) -> str:
         i = pool.index[champ]
         best = ROLES[int(np.argmax(pool.roles[i]))]
     return best
+
+
+# ------------------------------------------------------------------ Form ---
+
+FORM_K = 32  # Elo points moved by one Swiss result (a single Bo1 is noisy, so keep it modest)
+
+
+def series_expectation(a: Team, b: Team, bo: int) -> float:
+    """Pre-match chance that `a` wins a best-of-`bo`, sides by coin flip, no draft edge."""
+    p = 0.5 * (game_win_prob(a, b) + 1 - game_win_prob(b, a))
+    need = bo // 2 + 1
+    return sum(math.comb(need - 1 + k, k) * p ** need * (1 - p) ** k for k in range(need))
+
+
+def apply_form(teams: dict[str, Team], results: dict, k: float = FORM_K) -> list[dict]:
+    """Update team ratings in place from played results (Elo), plus manual `form` tweaks.
+
+    Returns one row per played match with the pre-match expectation, for upset reporting.
+    """
+    swiss = results.get("swiss", {})
+    rec = {t: [0, 0] for t in teams}
+    rows = []
+    for r in sorted(swiss.get("results", []), key=lambda r: int(r.get("round", 0))):
+        a, b = r["teams"]
+        w = r["winner"]
+        bo = 3 if (rec[a][0] == 2 or rec[a][1] == 2) else 1
+        exp_a = series_expectation(teams[a], teams[b], bo)
+        score_a = 1.0 if w == a else 0.0
+        delta = k * (score_a - exp_a) * (1.25 if bo == 3 else 1.0)
+        teams[a].rating += delta
+        teams[b].rating -= delta
+        loser = b if w == a else a
+        rec[w][0] += 1
+        rec[loser][1] += 1
+        rows.append({"round": int(r.get("round", 0)), "a": a, "b": b, "winner": w,
+                     "pa": round(100 * exp_a, 1), "upset": (exp_a < 0.5) == (w == a), "delta": round(delta, 1)})
+    for code, pts in results.get("form", {}).items():
+        teams[code].rating += float(pts)
+    return rows

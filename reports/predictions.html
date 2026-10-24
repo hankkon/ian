@@ -52,13 +52,23 @@ h2 small { font: 400 12px var(--body); color: var(--muted); letter-spacing: 0; }
 .split i { display: flex; align-items: center; font: 600 12px var(--mono); padding: 0 8px; color: var(--bg); white-space: nowrap; }
 .split i:last-child { justify-content: flex-end; }
 .split i.lose { opacity: .35; }
-.done { font-size: 11px; color: var(--good); grid-column: 1 / -1; margin-top: -6px; text-align: center; }
+.pool-tag { grid-column: 1 / -1; font: 600 11px var(--display); color: var(--muted); letter-spacing: .08em; margin: 6px 0 -4px; }
+.past-round { margin-bottom: 14px; }
+.past-round h3 { font: 600 12px var(--display); color: var(--muted); letter-spacing: .08em; margin: 0 0 8px; }
+.results { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 8px; }
+.res { display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.res .code { font-size: 13px; padding: 0 5px; border-radius: 4px; }
+.res .won { background: var(--fg); color: var(--bg); }
+.res .pct { white-space: nowrap; margin-left: auto; font: 12px var(--mono); color: var(--muted); }
+.upset { white-space: nowrap; font: 700 10px var(--display); letter-spacing: .06em; color: var(--bg); background: var(--ban); border-radius: 4px; padding: 1px 6px; }
+.form-up { color: var(--good); } .form-down { color: var(--ban); }
 
 .scroll { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; min-width: 680px; }
+table { border-collapse: collapse; width: 100%; min-width: 780px; }
 th, td { padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 th { font: 600 11px var(--display); color: var(--muted); letter-spacing: .06em; }
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { text-align: center; }
 td.adv { width: 30%; }
 .advbar { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
 .stack { flex: 1; height: 10px; border-radius: 3px; background: var(--line); display: flex; overflow: hidden; max-width: 200px; }
@@ -94,8 +104,13 @@ td.champ { color: var(--gold); font-weight: 600; }
   <section class="favs" id="favs" aria-label="奪冠熱門"></section>
 
   <section class="panel">
-    <h2>瑞士輪第一輪 <small>BO1，藍紅方隨機，含 BP 影響</small></h2>
-    <div class="matches" id="r1"></div>
+    <h2 id="nextTitle">下一輪預測</h2>
+    <div class="matches" id="next"></div>
+  </section>
+
+  <section class="panel" id="pastPanel">
+    <h2>已賽結果 <small>百分比為賽前模型預測；勝方隊伍代碼為白底</small></h2>
+    <div id="past"></div>
   </section>
 
   <section class="panel">
@@ -121,14 +136,14 @@ td.champ { color: var(--gold); font-weight: 600; }
 </div>
 
 <script>
-const D = {"sims": 5000, "teams": [{"code": "GEN", "name": "Gen.G", "region": "LCK", "seed": "LCK #1", "rating": 1800, "3-0": 31.6, "3-1": 34.6, "3-2": 21.6, "advance": 87.9, "semis": 68.2, "final": 46.0, "champion": 29.1, "expWins": 2.81}, {"code": "HLE", "name": "Hanwha Life Esports", "region": "LCK", "seed": "LCK #2", "rating": 1780, "3-0": 27.5, "3-1": 33.2, "3-2": 23.9, "advance": 84.7, "semis": 63.9, "final": 40.5, "champion": 23.1, "expWins": 2.76}, {"code": "BLG", "name": "Bilibili Gaming", "region": "LPL", "seed": "LPL #2", "rating": 1765, "3-0": 27.5, "3-1": 32.4, "3-2": 24.5, "advance": 84.4, "semis": 51.5, "final": 29.6, "champion": 15.4, "expWins": 2.76}, {"code": "T1", "name": "T1", "region": "LCK", "seed": "LCK #3", "rating": 1760, "3-0": 32.2, "3-1": 31.6, "3-2": 20.7, "advance": 84.4, "semis": 58.5, "final": 30.8, "champion": 14.6, "expWins": 2.77}, {"code": "AL", "name": "Anyone's Legend", "region": "LPL", "seed": "LPL #1", "rating": 1735, "3-0": 22.5, "3-1": 29.9, "3-2": 24.9, "advance": 77.2, "semis": 40.3, "final": 19.2, "champion": 8.3, "expWins": 2.65}, {"code": "DK", "name": "Dplus KIA", "region": "LCK", "seed": "LCK #4", "rating": 1705, "3-0": 14.6, "3-1": 23.8, "3-2": 26.8, "advance": 65.2, "semis": 35.0, "final": 12.5, "champion": 4.0, "expWins": 2.42}, {"code": "TES", "name": "Top Esports", "region": "LPL", "seed": "LPL #3", "rating": 1700, "3-0": 8.7, "3-1": 23.1, "3-2": 27.4, "advance": 59.3, "semis": 24.5, "final": 8.4, "champion": 2.9, "expWins": 2.29}, {"code": "G2", "name": "G2 Esports", "region": "LEC", "seed": "LEC #1", "rating": 1670, "3-0": 8.5, "3-1": 18.5, "3-2": 24.5, "advance": 51.5, "semis": 16.3, "final": 4.6, "champion": 1.1, "expWins": 2.16}, {"code": "IG", "name": "Invictus Gaming", "region": "LPL", "seed": "LPL #4", "rating": 1680, "3-0": 6.7, "3-1": 18.5, "3-2": 24.6, "advance": 49.8, "semis": 17.4, "final": 5.2, "champion": 1.0, "expWins": 2.11}, {"code": "MKOI", "name": "Movistar KOI", "region": "LEC", "seed": "LEC #2", "rating": 1610, "3-0": 3.9, "3-1": 10.6, "3-2": 17.0, "advance": 31.5, "semis": 6.3, "final": 1.3, "champion": 0.2, "expWins": 1.71}, {"code": "CFO", "name": "CTBC Flying Oyster", "region": "LCP", "seed": "LCP #1", "rating": 1590, "3-0": 3.9, "3-1": 10.4, "3-2": 14.8, "advance": 29.1, "semis": 4.6, "final": 0.6, "champion": 0.1, "expWins": 1.73}, {"code": "KC", "name": "Karmine Corp", "region": "LEC", "seed": "LEC #3", "rating": 1600, "3-0": 3.1, "3-1": 9.5, "3-2": 15.2, "advance": 27.8, "semis": 5.0, "final": 0.6, "champion": 0.1, "expWins": 1.61}, {"code": "TSW", "name": "Team Secret Whales", "region": "LCP", "seed": "LCP #2", "rating": 1570, "3-0": 3.9, "3-1": 9.2, "3-2": 12.2, "advance": 25.3, "semis": 3.5, "final": 0.4, "champion": 0.0, "expWins": 1.65}, {"code": "TLAW", "name": "Team Liquid Alienware", "region": "LCS", "seed": "LCS #1", "rating": 1565, "3-0": 2.7, "3-1": 7.0, "3-2": 10.7, "advance": 20.4, "semis": 2.7, "final": 0.3, "champion": 0.0, "expWins": 1.5}, {"code": "LYON", "name": "LYON", "region": "LCS", "seed": "LCS #2", "rating": 1535, "3-0": 2.3, "3-1": 6.0, "3-2": 8.7, "advance": 17.0, "semis": 2.0, "final": 0.2, "champion": 0.0, "expWins": 1.37}, {"code": "LOS", "name": "LOS", "region": "CBLOL", "seed": "CBLOL #1", "rating": 1460, "3-0": 0.3, "3-1": 1.5, "3-2": 2.5, "advance": 4.3, "semis": 0.3, "final": 0.0, "champion": 0.0, "expWins": 0.73}], "round1": [{"a": "GEN", "b": "IG", "pa": 68.4, "winner": null}, {"a": "HLE", "b": "TES", "pa": 65.4, "winner": null}, {"a": "T1", "b": "LOS", "pa": 85.0, "winner": null}, {"a": "DK", "b": "G2", "pa": 55.6, "winner": null}, {"a": "AL", "b": "KC", "pa": 69.8, "winner": null}, {"a": "BLG", "b": "MKOI", "pa": 71.7, "winner": null}, {"a": "TLAW", "b": "CFO", "pa": 45.5, "winner": null}, {"a": "LYON", "b": "TSW", "pa": 44.7, "winner": null}], "champs": [{"champ": "Rumble", "role": "上路", "pick": 20.7, "ban": 78.9, "wr": 51.3}, {"champ": "K'Sante", "role": "上路", "pick": 39.0, "ban": 60.4, "wr": 48.0}, {"champ": "Vi", "role": "打野", "pick": 25.8, "ban": 70.0, "wr": 50.3}, {"champ": "Kai'Sa", "role": "下路", "pick": 31.6, "ban": 61.4, "wr": 52.0}, {"champ": "Olaf", "role": "打野", "pick": 40.3, "ban": 52.7, "wr": 47.2}, {"champ": "Jarvan IV", "role": "打野", "pick": 40.7, "ban": 50.3, "wr": 50.0}, {"champ": "Orianna", "role": "中路", "pick": 27.8, "ban": 56.9, "wr": 47.2}, {"champ": "Varus", "role": "下路", "pick": 41.3, "ban": 40.6, "wr": 50.5}, {"champ": "Rell", "role": "輔助", "pick": 44.6, "ban": 34.8, "wr": 49.3}, {"champ": "Nocturne", "role": "打野", "pick": 37.8, "ban": 39.4, "wr": 50.7}, {"champ": "Taliyah", "role": "中路", "pick": 40.2, "ban": 36.8, "wr": 48.6}, {"champ": "Xayah", "role": "下路", "pick": 45.7, "ban": 29.4, "wr": 51.5}, {"champ": "Rakan", "role": "輔助", "pick": 36.7, "ban": 36.9, "wr": 50.9}, {"champ": "Ambessa", "role": "上路", "pick": 42.7, "ban": 30.8, "wr": 51.8}, {"champ": "Alistar", "role": "輔助", "pick": 60.9, "ban": 10.2, "wr": 52.2}, {"champ": "Gnar", "role": "上路", "pick": 41.9, "ban": 20.1, "wr": 50.0}, {"champ": "Cassiopeia", "role": "中路", "pick": 38.7, "ban": 20.9, "wr": 48.9}, {"champ": "Nautilus", "role": "輔助", "pick": 33.8, "ban": 23.0, "wr": 46.3}, {"champ": "Aurora", "role": "中路", "pick": 30.4, "ban": 20.5, "wr": 52.1}, {"champ": "Kalista", "role": "下路", "pick": 26.2, "ban": 23.6, "wr": 46.3}], "top8": ["GEN", "HLE", "BLG", "T1", "AL", "DK", "TES", "G2"], "h2h": [[null, 55.0, 62.0, 62.0, 68.0, 75.0, 76.0, 83.0], [45.0, null, 53.0, 57.0, 64.0, 74.0, 77.0, 80.0], [38.0, 47.0, null, 51.0, 62.0, 69.0, 70.0, 78.0], [38.0, 43.0, 49.0, null, 56.0, 65.0, 68.0, 75.0], [32.0, 36.0, 38.0, 44.0, null, 61.0, 64.0, 71.0], [25.0, 26.0, 31.0, 35.0, 39.0, null, 53.0, 60.0], [24.0, 23.0, 30.0, 32.0, 36.0, 47.0, null, 56.0], [17.0, 20.0, 22.0, 25.0, 29.0, 40.0, 44.0, null]]};
+const D = {"sims": 5000, "teams": [{"code": "GEN", "name": "Gen.G", "region": "LCK", "seed": "LCK #1", "rating": 1810, "form": 11, "record": "1-0", "3-0": 41.0, "3-1": 35.3, "3-2": 17.3, "advance": 93.6, "semis": 78.3, "final": 53.7, "champion": 35.1}, {"code": "HLE", "name": "Hanwha Life Esports", "region": "LCK", "seed": "LCK #2", "rating": 1792, "form": 12, "record": "1-0", "3-0": 37.3, "3-1": 35.8, "3-2": 18.7, "advance": 91.8, "semis": 74.8, "final": 47.3, "champion": 28.4}, {"code": "T1", "name": "T1", "region": "LCK", "seed": "LCK #3", "rating": 1764, "form": 5, "record": "1-0", "3-0": 37.6, "3-1": 32.9, "3-2": 18.0, "advance": 88.6, "semis": 67.4, "final": 37.4, "champion": 16.8}, {"code": "BLG", "name": "Bilibili Gaming", "region": "LPL", "seed": "LPL #2", "rating": 1742, "form": -23, "record": "0-1", "3-0": 0.0, "3-1": 29.3, "3-2": 34.5, "advance": 63.8, "semis": 32.6, "final": 16.0, "champion": 7.2}, {"code": "DK", "name": "Dplus KIA", "region": "LCK", "seed": "LCK #4", "rating": 1719, "form": 14, "record": "1-0", "3-0": 26.9, "3-1": 27.6, "3-2": 23.5, "advance": 78.0, "semis": 49.9, "final": 19.6, "champion": 6.1}, {"code": "AL", "name": "Anyone's Legend", "region": "LPL", "seed": "LPL #1", "rating": 1713, "form": -22, "record": "0-1", "3-0": 0.0, "3-1": 18.0, "3-2": 31.6, "advance": 49.5, "semis": 21.3, "final": 8.7, "champion": 2.9}, {"code": "TES", "name": "Top Esports", "region": "LPL", "seed": "LPL #3", "rating": 1687, "form": -12, "record": "0-1", "3-0": 0.0, "3-1": 13.0, "3-2": 28.3, "advance": 41.3, "semis": 13.6, "final": 4.6, "champion": 1.2}, {"code": "MKOI", "name": "Movistar KOI", "region": "LEC", "seed": "LEC #2", "rating": 1632, "form": 23, "record": "1-0", "3-0": 18.6, "3-1": 21.7, "3-2": 20.6, "advance": 60.9, "semis": 14.6, "final": 3.4, "champion": 0.6}, {"code": "IG", "name": "Invictus Gaming", "region": "LPL", "seed": "LPL #4", "rating": 1669, "form": -11, "record": "0-1", "3-0": 0.0, "3-1": 14.4, "3-2": 22.2, "advance": 36.6, "semis": 10.6, "final": 2.9, "champion": 0.6}, {"code": "G2", "name": "G2 Esports", "region": "LEC", "seed": "LEC #1", "rating": 1655, "form": -14, "record": "0-1", "3-0": 0.0, "3-1": 16.3, "3-2": 22.4, "advance": 38.7, "semis": 10.1, "final": 2.4, "champion": 0.5}, {"code": "KC", "name": "Karmine Corp", "region": "LEC", "seed": "LEC #3", "rating": 1621, "form": 22, "record": "1-0", "3-0": 17.2, "3-1": 20.8, "3-2": 19.0, "advance": 57.0, "semis": 11.7, "final": 2.1, "champion": 0.3}, {"code": "CFO", "name": "CTBC Flying Oyster", "region": "LCP", "seed": "LCP #1", "rating": 1604, "form": 15, "record": "1-0", "3-0": 12.9, "3-1": 17.8, "3-2": 18.2, "advance": 48.8, "semis": 9.4, "final": 1.5, "champion": 0.2}, {"code": "LYON", "name": "LYON", "region": "LCS", "seed": "LCS #2", "rating": 1552, "form": 18, "record": "1-0", "3-0": 8.4, "3-1": 11.7, "3-2": 12.9, "advance": 33.1, "semis": 4.1, "final": 0.3, "champion": 0.0}, {"code": "TSW", "name": "Team Secret Whales", "region": "LCP", "seed": "LCP #2", "rating": 1552, "form": -18, "record": "0-1", "3-0": 0.0, "3-1": 2.8, "3-2": 6.0, "advance": 8.8, "semis": 0.8, "final": 0.0, "champion": 0.0}, {"code": "TLAW", "name": "Team Liquid Alienware", "region": "LCS", "seed": "LCS #1", "rating": 1550, "form": -15, "record": "0-1", "3-0": 0.0, "3-1": 2.0, "3-2": 5.4, "advance": 7.4, "semis": 0.7, "final": 0.0, "champion": 0.0}, {"code": "LOS", "name": "LOS", "region": "CBLOL", "seed": "CBLOL #1", "rating": 1455, "form": -5, "record": "0-1", "3-0": 0.0, "3-1": 0.7, "3-2": 1.3, "advance": 2.1, "semis": 0.0, "final": 0.0, "champion": 0.0}], "rounds": [{"round": 1, "matches": [{"a": "GEN", "b": "IG", "pa": 66.6, "winner": "GEN", "upset": false, "bo": null}, {"a": "HLE", "b": "TES", "pa": 61.3, "winner": "HLE", "upset": false, "bo": null}, {"a": "T1", "b": "LOS", "pa": 84.9, "winner": "T1", "upset": false, "bo": null}, {"a": "DK", "b": "G2", "pa": 55.0, "winner": "DK", "upset": false, "bo": null}, {"a": "AL", "b": "KC", "pa": 68.5, "winner": "KC", "upset": true, "bo": null}, {"a": "BLG", "b": "MKOI", "pa": 70.9, "winner": "MKOI", "upset": true, "bo": null}, {"a": "TLAW", "b": "CFO", "pa": 46.4, "winner": "CFO", "upset": false, "bo": null}, {"a": "LYON", "b": "TSW", "pa": 45.0, "winner": "LYON", "upset": true, "bo": null}], "done": true}, {"round": 2, "matches": [{"a": "GEN", "b": "HLE", "pa": 52.6, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "DK", "b": "T1", "pa": 43.2, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "CFO", "b": "MKOI", "pa": 45.5, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "LYON", "b": "KC", "pa": 41.2, "winner": null, "upset": false, "bo": 1, "pool": "1-0"}, {"a": "LOS", "b": "G2", "pa": 23.6, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "IG", "b": "TSW", "pa": 64.9, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "TES", "b": "AL", "pa": 43.7, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}, {"a": "TLAW", "b": "BLG", "pa": 23.5, "winner": null, "upset": false, "bo": 1, "pool": "0-1"}], "done": false}], "champs": [{"champ": "Rumble", "role": "上路", "pick": 21.5, "ban": 78.0}, {"champ": "K'Sante", "role": "上路", "pick": 39.1, "ban": 60.4}, {"champ": "Vi", "role": "打野", "pick": 26.9, "ban": 68.6}, {"champ": "Kai'Sa", "role": "下路", "pick": 31.3, "ban": 61.9}, {"champ": "Olaf", "role": "打野", "pick": 40.0, "ban": 52.9}, {"champ": "Jarvan IV", "role": "打野", "pick": 40.0, "ban": 51.5}, {"champ": "Orianna", "role": "中路", "pick": 27.4, "ban": 57.4}, {"champ": "Varus", "role": "下路", "pick": 42.0, "ban": 40.5}, {"champ": "Rell", "role": "輔助", "pick": 44.6, "ban": 34.8}, {"champ": "Nocturne", "role": "打野", "pick": 37.7, "ban": 39.4}, {"champ": "Taliyah", "role": "中路", "pick": 40.5, "ban": 36.4}, {"champ": "Xayah", "role": "下路", "pick": 45.4, "ban": 29.4}, {"champ": "Rakan", "role": "輔助", "pick": 37.0, "ban": 36.7}, {"champ": "Ambessa", "role": "上路", "pick": 42.1, "ban": 31.1}, {"champ": "Alistar", "role": "輔助", "pick": 60.1, "ban": 10.2}, {"champ": "Gnar", "role": "上路", "pick": 41.9, "ban": 20.5}, {"champ": "Cassiopeia", "role": "中路", "pick": 38.6, "ban": 20.8}, {"champ": "Nautilus", "role": "輔助", "pick": 34.0, "ban": 23.1}, {"champ": "Aurora", "role": "中路", "pick": 30.5, "ban": 20.4}, {"champ": "Kalista", "role": "下路", "pick": 26.1, "ban": 24.2}], "top8": ["GEN", "HLE", "T1", "DK", "BLG", "MKOI", "KC", "AL"], "h2h": [[null, 55, 64, 74, 70, 89, 90, 75], [45, null, 59, 73, 62, 87, 90, 72], [36, 41, null, 63, 56, 83, 85, 63], [26, 27, 37, null, 40, 72, 76, 49], [30, 38, 44, 60, null, 78, 83, 61], [11, 13, 17, 28, 22, null, 55, 29], [10, 10, 15, 24, 17, 45, null, 25], [25, 28, 37, 51, 39, 71, 75, null]]};
 const T = Object.fromEntries(D.teams.map(t => [t.code, t]));
 const rc = c => `--rc:var(--r-${T[c].region.toLowerCase()})`;
 const f1 = n => n.toFixed(1);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 document.getElementById("sub").textContent =
-  `整屆賽事模擬 ${D.sims.toLocaleString()} 次。瑞士輪 16 隊取 8 隊（3 勝晉級、3 敗淘汰），八強起全部 BO5。`;
+  `整屆賽事模擬 ${D.sims.toLocaleString()} 次。瑞士輪 16 隊取 8 隊（3 勝晉級、3 敗淘汰），八強起全部 BO5。狀態：每場已賽結果依賽前預期調整隊伍實力（爆冷幅度越大，調整越多）。`;
 
 document.getElementById("favs").innerHTML = D.teams.slice(0, 4).map((t, i) => `
   <div class="fav" style="${rc(t.code)}">
@@ -138,24 +153,49 @@ document.getElementById("favs").innerHTML = D.teams.slice(0, 4).map((t, i) => `
     <div class="big">${f1(t.champion)}%</div><span class="lbl">冠軍機率 · 晉級 ${f1(t.advance)}%</span>
   </div>`).join("");
 
-document.getElementById("r1").innerHTML = D.round1.map(m => {
+const matchRow = m => {
   const pb = +(100 - m.pa).toFixed(1);
   const fav = m.pa >= 50 ? m.a : m.b;
+  const col = c => `var(--r-${T[c].region.toLowerCase()})`;
   return `<div class="match">
     <span class="code" style="${rc(m.a)}">${esc(m.a)}</span>
     <div class="split" role="img" aria-label="${esc(m.a)} ${m.pa}% 對 ${esc(m.b)} ${pb}%">
-      <i style="width:${m.pa}%;background:var(--r-${T[m.a].region.toLowerCase()})" class="${fav === m.a ? "" : "lose"}">${f1(m.pa)}%</i>
-      <i style="width:${pb}%;background:var(--r-${T[m.b].region.toLowerCase()})" class="${fav === m.b ? "" : "lose"}">${f1(pb)}%</i>
+      <i style="width:${m.pa}%;background:${col(m.a)}" class="${fav === m.a ? "" : "lose"}">${f1(m.pa)}%</i>
+      <i style="width:${pb}%;background:${col(m.b)}" class="${fav === m.b ? "" : "lose"}">${f1(pb)}%</i>
     </div>
     <span class="code" style="${rc(m.b)}">${esc(m.b)}</span>
-    ${m.winner ? `<span class="done">已結束：${esc(m.winner)} 勝</span>` : ""}
   </div>`;
+};
+const next = D.rounds.find(r => !r.done);
+if (next) {
+  const bo = next.matches.find(m => m.bo)?.bo || 1;
+  document.getElementById("nextTitle").innerHTML = `瑞士輪第 ${next.round} 輪預測 <small>BO${bo}，已計入前幾輪狀態與 BP 影響</small>`;
+  const pools = [...new Set(next.matches.map(m => m.pool))];
+  document.getElementById("next").innerHTML = pools.map(p =>
+    `<span class="pool-tag">${p} 組</span>` + next.matches.filter(m => m.pool === p).map(matchRow).join("")).join("");
+} else {
+  document.getElementById("next").closest("section").hidden = true;
+}
+const past = D.rounds.filter(r => r.matches.some(m => m.winner)).reverse();
+document.getElementById("pastPanel").hidden = !past.length;
+document.getElementById("past").innerHTML = past.map(r => {
+  const n = r.matches.filter(m => m.upset).length;
+  return `<div class="past-round"><h3>第 ${r.round} 輪${n ? `　·　${n} 場爆冷` : ""}</h3><div class="results">` +
+    r.matches.filter(m => m.winner).map(m => {
+      const pw = m.winner === m.a ? m.pa : +(100 - m.pa).toFixed(1);
+      return `<div class="res">
+        <span class="code ${m.winner === m.a ? "won" : ""}" style="${rc(m.a)}">${esc(m.a)}</span><span class="muted">vs</span>
+        <span class="code ${m.winner === m.b ? "won" : ""}" style="${rc(m.b)}">${esc(m.b)}</span>
+        ${m.upset ? `<span class="upset">爆冷</span>` : ""}<span class="pct">勝方賽前 ${f1(pw)}%</span></div>`;
+    }).join("") + "</div></div>";
 }).join("");
 
-document.getElementById("odds").innerHTML = `<thead><tr><th>隊伍</th><th>種子</th><th>晉級八強（3-0 / 3-1 / 3-2）</th><th>四強</th><th>決賽</th><th>冠軍</th></tr></thead><tbody>` +
+document.getElementById("odds").innerHTML = `<thead><tr><th>隊伍</th><th>種子</th><th>戰績</th><th>狀態</th><th>晉級八強（3-0 / 3-1 / 3-2）</th><th>四強</th><th>決賽</th><th>冠軍</th></tr></thead><tbody>` +
   D.teams.map(t => `<tr>
     <td><span class="code" style="${rc(t.code)}">${esc(t.code)}</span></td>
     <td class="muted">${esc(t.seed)}</td>
+    <td class="num">${t.record}</td>
+    <td class="num ${t.form > 0 ? "form-up" : t.form < 0 ? "form-down" : "muted"}" title="依已賽結果調整的實力分數">${t.form > 0 ? "▲" + t.form : t.form < 0 ? "▼" + (-t.form) : "—"}</td>
     <td class="adv"><div class="advbar"><span class="stack" title="3-0 ${t["3-0"]}% · 3-1 ${t["3-1"]}% · 3-2 ${t["3-2"]}%">
       <i style="width:${t["3-0"]}%"></i><i style="width:${t["3-1"]}%"></i><i style="width:${t["3-2"]}%"></i></span>
       <span class="num">${f1(t.advance)}%</span></div></td>
